@@ -27,16 +27,23 @@ def UploadAction(wavs):
         for root, dirs, files in os.walk(outputFolder, topdown=False):
             for name in files:
                 if '.TextGrid' in name:
-                    failDict[name.split(".")[0]] = True
+                    failDict[name.split(".")[0]] = os.path.join(root, name)
                     
         df = pd.DataFrame([failDict]).T
         df.to_csv("mfa_fail.csv")
 
     for k, v in failDict.items():
         if v == False:
-            des = os.path.join(failWav, os.path.basename(failloc[k]))
-            shutil.copy(failloc[k], des)
-        
+            f_des = os.path.join(failWav, os.path.basename(failloc[k]))
+            shutil.copy(failloc[k], f_des)
+        else:
+            s_des = os.path.join(successDir, os.path.basename(failloc[k]))
+            shutil.copy(failloc[k], s_des)
+            t_des = os.path.join(successDir, os.path.basename(v))
+            shutil.copy(v, t_des)
+
+    shutil.make_archive(successDir, 'zip', successDir)
+
 cwd = os.getcwd()
 fNames, fpaths, toneCSVs, plts, wavs = [], [], [], [], []
 
@@ -49,6 +56,7 @@ tonePlotDir = os.path.join(rootDir, 'Plot')
 
 matDir = checkFolder(cwd, 'materials')
 failWav = checkFolder(cwd, 'failWav')
+successDir = checkFolder(cwd, 'successDir')
 
 trip = os.path.join(matDir, "trip.txt")
 canDict = os.path.join(matDir, "cantonese_pronunciation.dict")
