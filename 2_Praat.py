@@ -54,20 +54,41 @@ toneCSVDir = checkFolder(rootDir, 'ToneCSV')
 praatPre = os.path.join(matDir, "Praat.exe")
 tonePraat = os.path.join(matDir, "measuretones_colab.praat")
 
+import getopt
+options = "gt:"
+long_options = ["Gender=", "textGrid="]
 
 if __name__ == "__main__":
 
-    arg = sys.argv
-    if len(arg) > 1:
-        if arg[1] == 'M':
-            minP, maxP = 50, 500
-        elif arg[1] == 'F':
-            minP, maxP = 100, 600
+    arguments, values = getopt.getopt(sys.argv[1:], options, long_options)
 
+    if len(arguments) > 1:
+        for k, v in arguments:
+            if k in ("-g", "--Gender"):
+                if v == 'M':
+                    minP, maxP = 50, 500
+                elif v == 'F':
+                    minP, maxP = 100, 600
+
+            if k in ("-t", "--textGrid"):
+                from pathlib import Path
+                path = Path(rootDir)
+                overrideFolder = os.path.join(path.parent.absolute(), v)
+                print(f"{overrideFolder=}")
+            
+                for root, dirs, files in os.walk(overrideFolder, topdown=False):
+                    for name in files:
+                        if '.TextGrid' in name:
+                            fNames.append(name)
+                print(f"override {len(fNames)} textGrid")
+
+
+    if len(arguments) > 1:
         for root, dirs, files in os.walk(outputFolder, topdown=False):
             for name in files:
-                if '.TextGrid' in name and arg[1] in name:
-                    fNames.append(name)
+                if '.TextGrid' in name and arguments[0][1] in name:
+                    if name not in fNames:
+                        fNames.append(name)
 
         start = time.time()
         Parallel(n_jobs=-1)(delayed(runPraat)(f) for f in fNames)
