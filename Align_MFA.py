@@ -48,25 +48,46 @@ def UploadAction(wavs):
 
         # print("fnames is", fNames)
         
-        for root, dirs, files in os.walk(outputFolder, topdown=False):
-            for name in files:
-                if '.TextGrid' in name:
-                    failDict[name.split(".")[0]] = True
-
-        df = pd.DataFrame([failDict]).T
-        df.to_csv("mfa_fail.csv")
+        failDict = check_failDict(failDict)
 
         # print("fpaths is", fpaths)
 
     except Exception as ex:
         print(ex)
-    # finally:
-    #     if not os.path.isdir(os.path.join(outputFolder, fName.split(".")[0])):
-    #         if os.path.isfile(os.path.join(outputFolder, 'unaligned.txt')):
-    #             os.remove(os.path.join(outputFolder, 'unaligned.txt'))
-    #         # os.system(f"{condaBat} activate aligner")
-    #         os.system(
-    #             f"mfa align {fpath} {canDict} {canZip} {os.path.join(outputFolder, fName.split('.')[0])} -j8 --clean --config_path narrowBeam.yaml")
+
+    finally:
+        for k, v in failDict.items():
+            if v == False:
+                failloc = os.path.join(inputFolder, k)
+                f_des = os.path.join(failWav, k)
+                print(failloc)
+                print(f_des)
+                shutil.move(failloc, f_des)
+
+        try:
+            os.system(
+                f"mfa align {failWav} {canDict} {canZip} {outputFolder} -j8 --clean --config_path {narrowBeam}")
+        except Exception as ex:
+            print(ex)
+
+        finally:
+            failDict = check_failDict(failDict)
+                 
+            for k, v in failDict.items():
+                if v == True:
+                    f_des = os.path.join(failWav, k)
+                    failloc = os.path.join(inputFolder, k)
+                    shutil.move(f_des, failloc)
+
+            df = pd.DataFrame([failDict]).T
+            df.to_csv("mfa_fail.csv")
+
+def check_failDict(failDict):
+    for root, dirs, files in os.walk(outputFolder, topdown=False):
+        for name in files:
+            if '.TextGrid' in name:
+                failDict[name.split(".")[0]] = True
+    return failDict
 
 cwd = os.getcwd()
 fNames, fpaths, toneCSVs, plts, wavs = [], [], [], [], []
@@ -88,6 +109,7 @@ canZip = os.path.join(matDir, "cantonese_model.zip")
 toneCSVDir = checkFolder(rootDir, 'ToneCSV')
 praatPre = os.path.join(matDir, "Praat.exe")
 tonePraat = os.path.join(matDir, "measuretones_colab.praat")
+narrowBeam = os.path.join(matDir, "narrowBeam.yaml")
 
 
 if __name__ == "__main__":

@@ -60,9 +60,12 @@ def RTone():
         plt.tight_layout()
         plt.savefig(p)
 
-        plts.append(plt)
-    # for pltx in plts:
-    #     pltx.show(block = False)
+        if len(toneCSVs) <=20:
+            plts.append(plt)
+            
+    if len(toneCSVs) <=20:
+        for pltx in plts:
+            pltx.show(block = False)
 
 fDict = {}
 
@@ -77,7 +80,7 @@ tempFolder = checkFolder(rootDir, 'tempFolder')
 tonePlotDir = os.path.join(rootDir, 'Plot')
 
 matDir = checkFolder(cwd, 'materials')
-failWav = checkFolder(cwd, 'failWav')
+# failWav = checkFolder(cwd, 'failWav')
 
 trip = os.path.join(matDir, "trip.txt")
 canDict = os.path.join(matDir, "cantonese_pronunciation.dict")

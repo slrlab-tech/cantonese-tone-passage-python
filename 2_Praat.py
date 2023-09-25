@@ -44,7 +44,7 @@ tempFolder = checkFolder(rootDir, 'tempFolder')
 tonePlotDir = os.path.join(rootDir, 'Plot')
 
 matDir = checkFolder(cwd, 'materials')
-failWav = checkFolder(cwd, 'failWav')
+# failWav = checkFolder(cwd, 'failWav')
 
 trip = os.path.join(matDir, "trip.txt")
 canDict = os.path.join(matDir, "cantonese_pronunciation.dict")
@@ -62,7 +62,7 @@ if __name__ == "__main__":
 
     arguments, values = getopt.getopt(sys.argv[1:], options, long_options)
 
-    if len(arguments) > 1:
+    if len(arguments) >= 1:
         for k, v in arguments:
             if k in ("-g", "--Gender"):
                 if v == 'M':
@@ -83,7 +83,7 @@ if __name__ == "__main__":
                 print(f"override {len(fNames)} textGrid")
 
 
-    if len(arguments) > 1:
+    if len(arguments) >= 1:
         for root, dirs, files in os.walk(outputFolder, topdown=False):
             for name in files:
                 if '.TextGrid' in name and arguments[0][1] in name:
