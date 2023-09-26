@@ -1,4 +1,4 @@
-# import shutil
+import shutil
 import os
 import sys
 
@@ -8,6 +8,7 @@ import sys
 # from matplotlib import pylab as plt
 # import seaborn as sns
 from joblib import Parallel, delayed
+from pathlib import Path
 
 import time
 
@@ -23,7 +24,10 @@ def runPraat(f):
     inputWav = outputTG.replace(
         'outputFolder', 'inputFolder').replace('TextGrid', 'wav')
     
-    print(name, os.path.exists(inputWav), os.path.exists(outputTG))
+    if overrideFolder != "":
+        outputTG = os.path.join(overrideFolder, f)
+
+    print(f, os.path.exists(inputWav), os.path.exists(outputTG))
 
     toneCSV = os.path.join(toneCSVDir, f.split(".")[0])
     toneCSVs.append(toneCSV)
@@ -33,6 +37,7 @@ def runPraat(f):
     os.system(
         f'"{praatPre}" --run {tonePraat} {inputWav} {outputTG} {toneCSV} {PitchMin} {PitchMax}')
         
+
 cwd = os.getcwd()
 fNames, fpaths, toneCSVs, plts, wavs = [], [], [], [], []
 
@@ -42,6 +47,7 @@ inputFolder = checkFolder(rootDir, 'inputFolder')
 outputFolder = checkFolder(rootDir, 'outputFolder')
 tempFolder = checkFolder(rootDir, 'tempFolder')
 tonePlotDir = os.path.join(rootDir, 'Plot')
+overrideFolder = ""
 
 matDir = checkFolder(cwd, 'materials')
 # failWav = checkFolder(cwd, 'failWav')
@@ -55,8 +61,23 @@ praatPre = os.path.join(matDir, "Praat.exe")
 tonePraat = os.path.join(matDir, "measuretones_colab.praat")
 
 import getopt
-options = "gt:"
+options = "g:t:"
 long_options = ["Gender=", "textGrid="]
+
+def find_textgrid(folder, kw=''):
+    fNames = []
+    for root, dirs, files in os.walk(folder, topdown=False):
+        for name in files:
+            
+            cond = True
+            if kw != '':
+                cond = kw in name
+
+            if '.TextGrid' in name and cond:
+                if name not in fNames:
+                    fNames.append(name)
+    return fNames
+
 
 if __name__ == "__main__":
 
@@ -71,24 +92,23 @@ if __name__ == "__main__":
                     minP, maxP = 100, 600
 
             if k in ("-t", "--textGrid"):
-                from pathlib import Path
                 path = Path(rootDir)
                 overrideFolder = os.path.join(path.parent.absolute(), v)
                 print(f"{overrideFolder=}")
             
-                for root, dirs, files in os.walk(overrideFolder, topdown=False):
-                    for name in files:
-                        if '.TextGrid' in name:
-                            fNames.append(name)
+                fNames = find_textgrid(overrideFolder, kw=arguments[0][1])
                 print(f"override {len(fNames)} textGrid")
+    # override_only = any(["-o" in k for k, v in arguments])
 
+    if overrideFolder != "":
+        toneCSVDir = checkFolder(overrideFolder, 'ToneCSV')
+    else:
+        toneCSVDir = checkFolder(rootDir, 'ToneCSV')
 
     if len(arguments) >= 1:
-        for root, dirs, files in os.walk(outputFolder, topdown=False):
-            for name in files:
-                if '.TextGrid' in name and arguments[0][1] in name:
-                    if name not in fNames:
-                        fNames.append(name)
+        if overrideFolder == "":
+            fNames = find_textgrid(outputFolder, kw=arguments[0][1]) + fNames
+        print(fNames)
 
         start = time.time()
         Parallel(n_jobs=-1)(delayed(runPraat)(f) for f in fNames)

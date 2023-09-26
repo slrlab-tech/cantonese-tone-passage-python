@@ -1,4 +1,4 @@
-# import shutil
+import shutil
 import os
 import sys
 
@@ -15,15 +15,18 @@ def checkFolder(p, f):
     return Dir
 
 def RTone():
-    if not os.path.isdir(tonePlotDir):
-        os.mkdir(tonePlotDir)
     for i, csvF in enumerate(toneCSVs):
-        c = csvF
-        t = os.path.basename(csvF).split(".")[0]
-        p = c.replace('ToneCSV', 'Plot').replace('csv', 'png')
-        # print(c, p)
+        c = os.path.basename(csvF)
+        t = c.split(".")[0]
+        p = csvF.replace('ToneCSV', 'Plot').replace('csv', 'png')
+        print(csvF, p)
 
-        df = pd.read_csv(c, sep=r',', skipinitialspace=True)
+        if overrideFolder != "":
+            old_t = os.path.join(tonePlotDir, f"{t}.png")
+            Plot_old = p.replace("Plot", "Plot_old")
+            shutil.copy(old_t, Plot_old)
+
+        df = pd.read_csv(csvF, sep=r',', skipinitialspace=True)
         df['prevTone'] = df['prevTone'].apply(
             lambda x: "pause" if x == "T" else x)
         df['nextTone'] = df['nextTone'].apply(
@@ -77,7 +80,8 @@ rootDir = checkFolder(cwd, 'ToneAnalysis')
 inputFolder = checkFolder(rootDir, 'inputFolder')
 outputFolder = checkFolder(rootDir, 'outputFolder')
 tempFolder = checkFolder(rootDir, 'tempFolder')
-tonePlotDir = os.path.join(rootDir, 'Plot')
+tonePlotDir = checkFolder(rootDir, 'Plot')
+overrideFolder = ""
 
 matDir = checkFolder(cwd, 'materials')
 # failWav = checkFolder(cwd, 'failWav')
@@ -90,8 +94,26 @@ toneCSVDir = checkFolder(rootDir, 'ToneCSV')
 praatPre = os.path.join(matDir, "Praat.exe")
 tonePraat = os.path.join(matDir, "measuretones_colab.praat")
 
+from pathlib import Path
+
+import getopt
+options = "t:"
+long_options = ["textGrid="]
+
+
 if __name__ == "__main__":
 
+    arguments, values = getopt.getopt(sys.argv[1:], options, long_options)
+
+    if len(arguments) >= 1:
+        for k, v in arguments:
+            if k in ("-t", "--textGrid"):
+                path = Path(rootDir)
+                overrideFolder = os.path.join(path.parent.absolute(), v)
+                toneCSVDir = os.path.join(overrideFolder, "ToneCSV")
+                checkFolder(overrideFolder, 'Plot')
+                checkFolder(overrideFolder, 'Plot_old')
+    
     for root, dirs, files in os.walk(toneCSVDir, topdown=False):
         for name in files:
             if '.csv' in name:
