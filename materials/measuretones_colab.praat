@@ -89,6 +89,7 @@ appendFile: output_file$, "token_number,wordLabel,vowelLabel,toneNumber,toneStar
 for t from 0 to measurement_points
   appendFile: output_file$, "F0-", t * 100/measurement_points, ","
 endfor
+appendFile: output_file$, "F1,F2,F3,"
 appendFile: output_file$, "syllType,onset,coda,prevTone,nextTone", newline$
 
 for x to nInt
@@ -170,14 +171,33 @@ for x to nInt
     # Calculate X% of toneDuration based on number of points
     toneInterval = toneDuration / measurement_points
 
+    vowelDuration = vowelEnd - vowelStart
+    vowelMidpoint = (vowelEnd + vowelStart)/2
+
     # Calculate distance from start of utterance
     # utterancePos = toneStart - phraseStart
+    
+    if x/nInt > 0.2475
+      if x/nInt < 0.2525
+        appendInfo: " ###---25---### "
+      endif
+    endif
+    if x/nInt > 0.4975
+      if x/nInt < 0.5025
+        appendInfo: " ###---50---### "
+      endif
+    endif
+    if x/nInt > 0.7475
+      if x/nInt < 0.7525
+        appendInfo: " ###---75---### "
+      endif
+    endif
 
     # Only measure tones longer than 100 ms
     if toneDuration > 0.1
 
       # Print current token + vowel for reference
-      appendInfoLine: token_number, tab$, wordLabel$
+      # appendInfoLine: token_number, tab$, wordLabel$
 
       # Start printing metadata
       appendFile: output_file$, token_number, ","
@@ -202,7 +222,23 @@ for x to nInt
 
       removeObject: pitch
       removeObject: wavchunk
+      
+      # Get F1, F2, F3 measurements
+      selectObject: wav
+      wavchunk = Extract part: vowelStart, vowelEnd, "yes"
+      formant = To Formant (burg)... 0 5 5000 0.025 50
 
+      selectObject: formant
+      f1 = Get value at time... 1 vowelMidpoint Hertz Linear
+      f2 = Get value at time... 2 vowelMidpoint Hertz Linear
+      f3 = Get value at time... 3 vowelMidpoint Hertz Linear
+      appendFile: output_file$, f1, ",", f2, ",", f3, ","
+
+      removeObject: formant
+      removeObject: wavchunk
+
+
+      # write other infos
       appendFile: output_file$, syllType$, ",", onset$, ",", coda$, ","
       appendFile: output_file$, "T", prevTone$, ",", "T", nextTone$
 
@@ -217,4 +253,4 @@ endfor
 removeObject: tg
 removeObject: wav
 
-appendInfoLine: "Finished!"
+# appendInfoLine: "Finished!"

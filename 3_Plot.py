@@ -25,8 +25,13 @@ def RTone():
             old_t = os.path.join(tonePlotDir, f"{t}.png")
             Plot_old = p.replace("Plot", "Plot_old")
             shutil.copy(old_t, Plot_old)
+        df = pd.read_csv(csvF, sep=r',', skipinitialspace=True, encoding='unicode_escape')
+        if 'prevTone' not in df:
+            import codecs
+            from io import StringIO
+            x = codecs.open(csvF, "r", "utf-16").read()
+            df = pd.read_csv(StringIO(x), sep=r',', skipinitialspace=True)
 
-        df = pd.read_csv(csvF, sep=r',', skipinitialspace=True)
         df['prevTone'] = df['prevTone'].apply(
             lambda x: "pause" if x == "T" else x)
         df['nextTone'] = df['nextTone'].apply(
@@ -45,7 +50,7 @@ def RTone():
         df['meanF0'] = statistics.mean(df['F0'])
         df['medianF0'] = statistics.median(df['F0'])
         df = df.assign(F0st=lambda x: 12 *
-                       np.log(x.F0 / x.meanF0) / np.log(2))
+                    np.log(x.F0 / x.meanF0) / np.log(2))
 
         fig = plt.figure()
         df_tone = df.groupby(['Timepoint', 'toneNumber']).agg(
@@ -62,6 +67,8 @@ def RTone():
         plt.legend(loc=(1.04, 0.5), labels=[f'T{i+1}' for i in range(6)])
         plt.tight_layout()
         plt.savefig(p)
+        
+        plt.close()
 
         if len(toneCSVs) <=20:
             plts.append(plt)

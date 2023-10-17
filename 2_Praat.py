@@ -108,6 +108,7 @@ if __name__ == "__main__":
     if len(arguments) >= 1:
         if overrideFolder == "":
             fNames = find_textgrid(outputFolder, kw=arguments[0][1]) + fNames
+        print(f"Total TextGrid = {len(fNames)}")
         print(fNames)
 
         start = time.time()

@@ -74,8 +74,8 @@ def UploadAction(wavs):
             failDict = check_failDict(failDict)
                  
             for k, v in failDict.items():
-                if v == True:
-                    f_des = os.path.join(failWav, k)
+                f_des = os.path.join(failWav, k)
+                if v == True and os.path.exists(f_des):
                     failloc = os.path.join(inputFolder, k)
                     shutil.move(f_des, failloc)
 
