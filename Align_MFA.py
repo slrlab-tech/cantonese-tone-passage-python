@@ -1,17 +1,4 @@
-import shutil, os
-import sys
-
-import pandas as pd
-import numpy as np
-# import statistics
-# from matplotlib import pylab as plt
-# import seaborn as sns
-
 from ffPath import *
-
-
-failDict = {}
-fNames, fpaths, wavs = [], [], []
 
 
 def construct_input(wavs):

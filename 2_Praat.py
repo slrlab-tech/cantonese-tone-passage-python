@@ -1,16 +1,4 @@
-import shutil
-import os
-import sys
-
-# import pandas as pd
-# import statistics
-# import numpy as np
-# from matplotlib import pylab as plt
-# import seaborn as sns
-from joblib import Parallel, delayed
-from pathlib import Path
-
-import time
+from ffPath import *
 
 def checkFolder(p, f):
     Dir = os.path.join(p, f)
@@ -27,7 +15,7 @@ def runPraat(f):
     if overrideFolder != "":
         outputTG = os.path.join(overrideFolder, f)
 
-    print(f, os.path.exists(inputWav), os.path.exists(outputTG))
+    # print(f, os.path.exists(inputWav), os.path.exists(outputTG))
 
     toneCSV = os.path.join(toneCSVDir, f.split(".")[0])
     toneCSVs.append(toneCSV)
@@ -37,30 +25,6 @@ def runPraat(f):
     os.system(
         f'"{praatPre}" --run {tonePraat} {inputWav} {outputTG} {toneCSV} {PitchMin} {PitchMax}')
         
-
-cwd = os.getcwd()
-fNames, fpaths, toneCSVs, plts, wavs = [], [], [], [], []
-
-print(f'{cwd=}')
-rootDir = checkFolder(cwd, 'ToneAnalysis')
-inputFolder = checkFolder(rootDir, 'inputFolder')
-outputFolder = checkFolder(rootDir, 'outputFolder')
-tempFolder = checkFolder(rootDir, 'tempFolder')
-tonePlotDir = os.path.join(rootDir, 'Plot')
-overrideFolder = ""
-
-matDir = checkFolder(cwd, 'materials')
-# failWav = checkFolder(cwd, 'failWav')
-
-trip = os.path.join(matDir, "trip.txt")
-canDict = os.path.join(matDir, "cantonese_pronunciation.dict")
-canZip = os.path.join(matDir, "cantonese_model.zip")
-
-toneCSVDir = checkFolder(rootDir, 'ToneCSV')
-praatPre = os.path.join(matDir, "Praat.exe")
-tonePraat = os.path.join(matDir, "measuretones_colab.praat")
-
-import getopt
 options = "g:t:"
 long_options = ["Gender=", "textGrid="]
 
@@ -112,6 +76,6 @@ if __name__ == "__main__":
         print(fNames)
 
         start = time.time()
-        Parallel(n_jobs=-1)(delayed(runPraat)(f) for f in fNames)
+        Parallel(n_jobs=-1)(delayed(runPraat)(fNames[i]) for i in tqdm(range(len(fNames))))
         end = time.time()
         print(end - start)

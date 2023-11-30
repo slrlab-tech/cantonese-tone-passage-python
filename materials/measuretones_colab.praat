@@ -39,7 +39,7 @@ if file_name$ = ""
   file_name$ ="Northwind_Sun"
 endif
 
-appendInfoLine: wavFile$, tgFile$, file_name$, pitch_min, pitch_max
+# appendInfoLine: wavFile$, tgFile$, file_name$, pitch_min, pitch_max
 
 silence_threshold = 0.03
 voicing_threshold = 0.45
@@ -177,21 +177,21 @@ for x to nInt
     # Calculate distance from start of utterance
     # utterancePos = toneStart - phraseStart
     
-    if x/nInt > 0.2475
-      if x/nInt < 0.2525
-        appendInfo: " ###---25---### "
-      endif
-    endif
-    if x/nInt > 0.4975
-      if x/nInt < 0.5025
-        appendInfo: " ###---50---### "
-      endif
-    endif
-    if x/nInt > 0.7475
-      if x/nInt < 0.7525
-        appendInfo: " ###---75---### "
-      endif
-    endif
+    # if x/nInt > 0.2475
+    #   if x/nInt < 0.2525
+    #     appendInfo: " ###---25---### "
+    #   endif
+    # endif
+    # if x/nInt > 0.4975
+    #   if x/nInt < 0.5025
+    #     appendInfo: " ###---50---### "
+    #   endif
+    # endif
+    # if x/nInt > 0.7475
+    #   if x/nInt < 0.7525
+    #     appendInfo: " ###---75---### "
+    #   endif
+    # endif
 
     # Only measure tones longer than 100 ms
     if toneDuration > 0.1
